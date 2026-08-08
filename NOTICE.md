@@ -24,7 +24,7 @@ aiusage/http.py        fetch, error vocabulary, credential resolution
 aiusage/billing.py     pricing tables
 aiusage/stats.py       Claude Code / Codex CLI local activity stats
 aiusage/__main__.py    the get-ai-usage CLI
-bin/get-ai-usage       launcher
+bin/get-ai-usage       launcher (modified, see below)
 bin/python-interp.sh   interpreter resolution
 tests/fixtures/        recorded provider responses
 tests/*.test.sh        backend contract tests (paths adjusted)
@@ -47,6 +47,26 @@ first and offered there as
 exists because the widget requires Plasma 6, while the backend requires nothing
 but `python3` — so people on Plasma 5, GNOME, XFCE, a status bar or an SSH
 session can use the numbers without installing a desktop widget.
+
+## Deliberate changes to upstream files
+
+Kept to a minimum, because every difference makes pulling upstream fixes more
+expensive. The complete list:
+
+- **`bin/get-ai-usage`** resolves symlinks before locating the package.
+  Upstream, `BASH_SOURCE` reports the link rather than its target, so linking
+  the tool into `~/.local/bin` fails with `No module named aiusage` — upstream
+  works around this with a wrapper script, which is fine there because three
+  in-tree consumers call it by absolute path, but a CLI has to be linkable.
+- **`aiusage/__main__.py`** had its envelope assembly factored out into
+  `aiusage/envelope.py` so the terminal frontend does not duplicate it, and its
+  module docstring rewritten for this context. Behaviour is unchanged.
+- Test scripts have their paths adjusted for this layout (`bin/` instead of
+  `package/contents/tools/sh/`). The assertions are untouched.
+
+Everything else — every provider, every normalizer, `config.py`, `http.py`,
+`contract.py`, `stats.py`, `billing.py`, the fixtures — is byte-for-byte
+upstream.
 
 ## Staying in sync
 
