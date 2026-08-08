@@ -61,12 +61,20 @@ expensive. The complete list:
 - **`aiusage/__main__.py`** had its envelope assembly factored out into
   `aiusage/envelope.py` so the terminal frontend does not duplicate it, and its
   module docstring rewritten for this context. Behaviour is unchanged.
+- **`aiusage/normalize/zai.py`** accepts an absolute reset epoch. Live z.ai
+  responses put an absolute millisecond timestamp in `nextResetTime`, which the
+  original code added to `now`, yielding reset dates in the 2080s — hidden
+  because the formatted string carries no year and a table without a RESET
+  column never showed it. Values small enough to be genuine durations are still
+  treated as such, so both shapes work. Covered by a new fixture,
+  `tests/fixtures/zai-absolute-reset.json`.
 - Test scripts have their paths adjusted for this layout (`bin/` instead of
-  `package/contents/tools/sh/`). The assertions are untouched.
+  `package/contents/tools/sh/`), and carry the two assertions for the fixture
+  above. The inherited assertions are untouched.
 
-Everything else — every provider, every normalizer, `config.py`, `http.py`,
-`contract.py`, `stats.py`, `billing.py`, the fixtures — is byte-for-byte
-upstream.
+Everything else — every provider, the other normalizers, `config.py`,
+`http.py`, `contract.py`, `stats.py`, `billing.py`, the inherited fixtures — is
+byte-for-byte upstream.
 
 ## Staying in sync
 
