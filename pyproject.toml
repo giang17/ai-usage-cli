@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-usage-cli"
+version = "0.1.0"
+description = "AI API quota in your terminal — Claude, OpenAI, Z.AI, Kimi, Copilot and more"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["cli", "quota", "usage", "claude", "openai", "llm"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+]
+
+# Intentionally empty, and worth keeping that way: the whole package is
+# standard-library-only, which is what lets it run from a bare checkout with no
+# install step at all.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/giang17/ai-usage-cli"
+Upstream = "https://github.com/Muddyblack/kde-ai-usage"
+
+[project.scripts]
+ai-usage-cli = "aiusage.cli:run"
+get-ai-usage = "aiusage.__main__:run"
+
+[tool.setuptools]
+packages = ["aiusage", "aiusage.providers", "aiusage.normalize"]
+
+# Dev-only lint/format config. Nothing here is a runtime dependency.
+[tool.pyrefly]
+search-path = [".", "aiusage"]
+
+[tool.ruff]
+line-length = 150
+target-version = "py39"
+include = ["aiusage/**/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade — with target-version pinned, this also flags any
+           # 3.10+-only syntax that would break older distributions
+]
+ignore = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

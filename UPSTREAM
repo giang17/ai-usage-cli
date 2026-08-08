@@ -1,0 +1,6 @@
+repository: https://github.com/Muddyblack/kde-ai-usage
+commit:     c9b518ad84f858db5ef4df54ef9670cf86eeb759
+date:       2026-08-08
+
+This tree carries the provider backend as of the commit above.
+Run `make upstream-log` to see what has changed there since.

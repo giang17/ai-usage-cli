@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The floor matters: this has to keep working on the Python that
+        # long-term distributions ship, which is the whole point of staying
+        # standard-library-only.
+        python-version: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: ruff check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check aiusage"
+
+      - name: ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check aiusage"
+
+      - name: tests
+        run: make test
