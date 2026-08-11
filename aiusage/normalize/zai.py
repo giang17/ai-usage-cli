@@ -1,3 +1,4 @@
+import datetime
 import math
 
 from ..contract import flat_window, jround, monthly_window, num, pct_clamp, provider_base, provider_error
@@ -22,6 +23,18 @@ def _compact(n):
         if abs(n) >= limit:
             return f"{n / limit:.2f}{suffix}"
     return str(int(n))
+
+
+def _today_label(today):
+    """ "Today (Aug 12)" — the reset column already carries the date this rolls
+    over to, and a bare "Today" next to tomorrow's date reads as a mismatch.
+    Naming the day being summed removes the question."""
+    date = str(today.get("date") or "")
+    try:
+        d = datetime.datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        return "Today"
+    return "Today (" + d.strftime("%b ") + str(d.day) + ")"
 
 
 def _today_detail(today):
@@ -88,7 +101,7 @@ def normalize_zai(raw):
         # from the windows above so it is not read as a fourth quota. The reset
         # column carries the date change, so a total that has stopped growing
         # (see _report_day) has a visible horizon instead of looking stuck.
-        r["quotaWindows"].append(flat_window("zai_today", "Today", 0, num(today.get("rollsOverAt")), today_detail, False, separator=True))
+        r["quotaWindows"].append(flat_window("zai_today", _today_label(today), 0, num(today.get("rollsOverAt")), today_detail, False, separator=True))
     r["slots"] = [
         {"pct": token_pct, "color": "#126ef4", "text": None, "tooltip": f"Z.AI tokens (5h): {jround(token_pct)}%"},
         {"pct": token2_pct, "color": "#3b82f6", "text": None, "tooltip": f"Z.AI tokens (7d): {jround(token2_pct)}%"},

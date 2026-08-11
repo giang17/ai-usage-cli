@@ -275,6 +275,10 @@ check zai-today "renders the day total as a value, not a meter" '
     and (.quotaWindows[3] | .detail == "41.18M tokens · 370 calls"
          and (.showMeter | not) and .separatorBefore == true
          and .resetAt == 1786485600)'
+# The reset column shows the date this rolls over TO, so the label has to name
+# the day being summed — otherwise the row reads as being about tomorrow.
+check zai-today "names the day it is summing" '
+    (.quotaWindows[3].label) == "Today (Aug 11)"'
 # A day total that has stopped growing would read as a stuck counter, so the
 # date change is carried rather than left to the reader to work out.
 check zai-success "stays silent about a day total that was not fetched" '
