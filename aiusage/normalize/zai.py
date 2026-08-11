@@ -10,6 +10,30 @@ from ..contract import flat_window, jround, monthly_window, num, pct_clamp, prov
 _ABSOLUTE_MS_FLOOR = 1000000000000
 
 
+def _compact(n):
+    """Token counts run to eight digits; the table has room for a few.
+
+    Two decimals to match how the vendor's dashboard prints the same figure —
+    this number exists to be checked against that page, and a differently
+    rounded one invites the reader to wonder which is wrong.
+    """
+    n = num(n)
+    for limit, suffix in ((1000000000, "B"), (1000000, "M"), (1000, "K")):
+        if abs(n) >= limit:
+            return f"{n / limit:.2f}{suffix}"
+    return str(int(n))
+
+
+def _today_detail(today):
+    """ "41.2M tokens · 370 calls" — omitting whichever half did not come back."""
+    parts = []
+    if today.get("tokens") is not None:
+        parts.append(f"{_compact(today['tokens'])} tokens")
+    if today.get("calls") is not None:
+        parts.append(f"{num(today['calls'])} calls")
+    return " · ".join(parts)
+
+
 def _reset_at(value, now):
     """Reset epoch in seconds from a value that may be absolute or relative."""
     ms = num(value)
@@ -51,11 +75,20 @@ def normalize_zai(raw):
 
     r = provider_base("zai", "Z.AI", "#126ef4", now)
     r["summary"] = {"pct": token_pct, "text": f"{jround(token_pct)}%", "detail": res.get("level") or "", "hasChart": True}
+    today = res.get("today") if isinstance(res.get("today"), dict) else None
+    today_detail = _today_detail(today) if today else ""
+
     r["quotaWindows"] = [
         flat_window("zai_tokens", "5-hour tokens", token_pct, token_reset, token_detail, True),
         flat_window("zai_tokens_long", "7-day tokens", token2_pct, token2_reset, "", True),
         flat_window("zai_tools", "Monthly tools", tools_pct, tools_reset, tools_detail, True),
     ]
+    if today_detail:
+        # Consumption so far, not a share of anything — no meter, and ruled off
+        # from the windows above so it is not read as a fourth quota. The reset
+        # column carries the date change, so a total that has stopped growing
+        # (see _report_day) has a visible horizon instead of looking stuck.
+        r["quotaWindows"].append(flat_window("zai_today", "Today", 0, num(today.get("rollsOverAt")), today_detail, False, separator=True))
     r["slots"] = [
         {"pct": token_pct, "color": "#126ef4", "text": None, "tooltip": f"Z.AI tokens (5h): {jround(token_pct)}%"},
         {"pct": token2_pct, "color": "#3b82f6", "text": None, "tooltip": f"Z.AI tokens (7d): {jround(token2_pct)}%"},
@@ -83,5 +116,16 @@ def normalize_zai(raw):
             "resetAt": tools_reset,
         },
         "models": res.get("models") or [],
+        "today": {
+            "available": today is not None,
+            "date": (today or {}).get("date") or "",
+            "rollsOverAt": num((today or {}).get("rollsOverAt")),
+            "tokens": num((today or {}).get("tokens")) if (today or {}).get("tokens") is not None else None,
+            "calls": num((today or {}).get("calls")) if (today or {}).get("calls") is not None else None,
+            "models": [
+                {"name": m.get("name") or "", "tokens": num(m.get("tokens"))} for m in ((today or {}).get("models") or []) if isinstance(m, dict)
+            ],
+            "tools": (today or {}).get("tools") or {},
+        },
     }
     return r

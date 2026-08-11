@@ -138,8 +138,8 @@ def quota_window(key, label, w, detail):
     }
 
 
-def flat_window(key, label, pct, reset_at, detail, meter):
-    return {
+def flat_window(key, label, pct, reset_at, detail, meter, separator=False):
+    w = {
         "key": key,
         "label": label,
         "pct": pct_clamp(pct),
@@ -149,6 +149,12 @@ def flat_window(key, label, pct, reset_at, detail, meter):
         "detail": detail,
         "showMeter": meter,
     }
+    if separator:
+        # Marks where a list stops being quota windows and starts being
+        # something else, so a frontend can rule the two apart. Frontends that
+        # do not know the key list the row exactly as before.
+        w["separatorBefore"] = True
+    return w
 
 
 def chart_window(id_, key, label, size, gran):

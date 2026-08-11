@@ -103,7 +103,8 @@ when its remembered one disappears.
 | `summary.text` | headline string, already formatted (`"23%"`, `"$12.5"`, `"CLI"`) |
 | `summary.detail` | plan / account line |
 | `summary.hasChart` | false when the provider has no series worth charting |
-| `quotaWindows[]` | ordered rows: `key`, `label`, `pct`, `available`, `resetAt`, `resetText`, `detail`, `showMeter` |
+| `quotaWindows[]` | ordered rows: `key`, `label`, `pct`, `available`, `resetAt`, `resetText`, `detail`, `showMeter`, and optionally `separatorBefore` |
+| `separatorBefore` | present and true where a row stops being a quota window (a consumption total, a balance), so a frontend can rule the two apart. Optional — a frontend that ignores it lists the row exactly as before |
 | `chartWindows[]` | chart ranges — see below. Empty when the provider has no chartable series |
 | `slots[]` | compact panel pills: `pct`, `color`, `text` (null → show the meter), `tooltip` |
 | `historyValues` | series keys this provider contributes to the shared usage history |
@@ -211,7 +212,22 @@ rollout), `status`.
 `billingError`.
 
 **zai** — `hasKey`, `keyValid`, `level`, `token` (`pct`, `used`, `limit`,
-`resetAt`), `tools` (`pct`, `remaining`, `resetAt`), `models`.
+`resetAt`), `tokenLong` (`pct`, `resetAt`), `tools` (`pct`, `remaining`,
+`resetAt`), `models`, `today` (`available`, `date`, `rollsOverAt`, `tokens`,
+`calls`, `models[]` with `name`/`tokens`, `tools` with `search`/`reader`/
+`zread`).
+
+`today` comes from two further monitor endpoints, `model-usage` and
+`tool-usage`, both taking `startTime`/`endTime` in `yyyy-MM-dd HH:mm:ss` —
+they reject ISO-8601 with a `T`. The bounds are the plain **local calendar
+date**, sent without timezone conversion, because that is what the vendor's
+dashboard does and matching it is the whole point of the figure (verified
+digit-for-digit against a live account). The service applies those bounds on
+its own clock, which runs ahead of Europe, so the day being summed is shifted
+and the total stops growing before local midnight; `rollsOverAt` carries the
+date change so a total that has stopped moving does not read as stuck. Neither
+call can fail the provider: the quota windows are the point, and a missing
+statistic must not cost them.
 
 **copilot** — `hasKey`, `keyValid`, `username`, `used`, `quota`, `pct`,
 `resetAt`.

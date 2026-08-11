@@ -125,6 +125,12 @@ def _provider_rows(p, unicode_ok):
             usage = _cell((detail or "—",))
             note = ""
 
+        # A rule inside a provider, for a row that is no longer a quota window.
+        # Never leads the group — a rule directly under the header reads as a
+        # formatting glitch rather than a divide.
+        if w.get("separatorBefore") is True and rows:
+            rows.append(None)
+
         rows.append(
             [
                 _cell((label, "bold")),
@@ -145,12 +151,13 @@ def render_table(env, style, unicode_ok=True):
     if not groups:
         return "no providers selected — enable some in the settings file or pass --provider"
 
-    keep = [i for i in range(len(HEADERS)) if i not in OPTIONAL_COLUMNS or any(_width(row[i]) for g in groups for row in g)]
-    groups = [[[row[i] for i in keep] for row in g] for g in groups]
+    # A None row is a rule inside a group; it carries no cells to measure.
+    keep = [i for i in range(len(HEADERS)) if i not in OPTIONAL_COLUMNS or any(_width(row[i]) for g in groups for row in g if row)]
+    groups = [[[row[i] for i in keep] if row else None for row in g] for g in groups]
 
     header = [_cell((HEADERS[i], "bold")) for i in keep]
     columns = len(keep)
-    widths = [max(_width(r[i]) for r in [header] + [row for g in groups for row in g]) for i in range(columns)]
+    widths = [max(_width(r[i]) for r in [header] + [row for g in groups for row in g if row]) for i in range(columns)]
     rule = ("─" if unicode_ok else "-") * (sum(widths) + 2 * (columns - 1))
 
     def line(row):
@@ -161,7 +168,7 @@ def render_table(env, style, unicode_ok=True):
     for i, g in enumerate(groups):
         if i:
             out.append(style(rule, "dim"))
-        out.extend(line(row) for row in g)
+        out.extend(line(row) if row else style(rule, "dim") for row in g)
     return "\n".join(out)
 
 
