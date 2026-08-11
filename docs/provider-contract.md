@@ -103,8 +103,8 @@ when its remembered one disappears.
 | `summary.text` | headline string, already formatted (`"23%"`, `"$12.5"`, `"CLI"`) |
 | `summary.detail` | plan / account line |
 | `summary.hasChart` | false when the provider has no series worth charting |
-| `quotaWindows[]` | ordered rows: `key`, `label`, `pct`, `available`, `resetAt`, `resetText`, `detail`, `showMeter`, and optionally `separatorBefore` |
-| `separatorBefore` | present and true where a row stops being a quota window (a consumption total, a balance), so a frontend can rule the two apart. Optional — a frontend that ignores it lists the row exactly as before |
+| `quotaWindows[]` | ordered rows: `key`, `label`, `pct`, `available`, `resetAt`, `resetText`, `detail`, `showMeter`, and optionally `note` |
+| `note` | aside shown beside the value. Only meaningful with `showMeter: false`, where `detail` becomes the value itself and would otherwise leave the row no room for context. Optional — a frontend that ignores it loses the aside, nothing else |
 | `chartWindows[]` | chart ranges — see below. Empty when the provider has no chartable series |
 | `slots[]` | compact panel pills: `pct`, `color`, `text` (null → show the meter), `tooltip` |
 | `historyValues` | series keys this provider contributes to the shared usage history |

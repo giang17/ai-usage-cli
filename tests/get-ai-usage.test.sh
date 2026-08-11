@@ -272,9 +272,8 @@ check zai-today "reports the service day total beside the quota windows" '
     and (.details.today.models | map(.name)) == ["GLM-5.2", "GLM-5-Turbo", "GLM-4.7"]'
 check zai-today "renders the day total as a value, not a meter" '
     (.quotaWindows | map(.key)) == ["zai_tokens", "zai_tokens_long", "zai_tools", "zai_today"]
-    and (.quotaWindows[3] | .detail == "41.18M tokens · 370 calls"
-         and (.showMeter | not) and .separatorBefore == true
-         and .resetAt == 1786485600)'
+    and (.quotaWindows[3] | .detail == "41.18M tokens" and .note == "370 calls"
+         and (.showMeter | not) and .resetAt == 1786485600)'
 # The reset column shows the date this rolls over TO, so the label has to name
 # the day being summed — otherwise the row reads as being about tomorrow.
 check zai-today "names the day it is summing" '

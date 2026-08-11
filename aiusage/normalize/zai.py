@@ -38,13 +38,14 @@ def _today_label(today):
 
 
 def _today_detail(today):
-    """ "41.2M tokens · 370 calls" — omitting whichever half did not come back."""
-    parts = []
-    if today.get("tokens") is not None:
-        parts.append(f"{_compact(today['tokens'])} tokens")
-    if today.get("calls") is not None:
-        parts.append(f"{num(today['calls'])} calls")
-    return " · ".join(parts)
+    """The value itself: "41.18M tokens", or "" if it did not come back."""
+    return f"{_compact(today['tokens'])} tokens" if today.get("tokens") is not None else ""
+
+
+def _today_note(today):
+    """The aside: "370 calls". Tokens are what the quota is spent in, so they
+    are the value; the call count is context for it."""
+    return f"{num(today['calls'])} calls" if today.get("calls") is not None else ""
 
 
 def _reset_at(value, now):
@@ -97,11 +98,13 @@ def normalize_zai(raw):
         flat_window("zai_tools", "Monthly tools", tools_pct, tools_reset, tools_detail, True),
     ]
     if today_detail:
-        # Consumption so far, not a share of anything — no meter, and ruled off
-        # from the windows above so it is not read as a fourth quota. The reset
-        # column carries the date change, so a total that has stopped growing
-        # (see _report_day) has a visible horizon instead of looking stuck.
-        r["quotaWindows"].append(flat_window("zai_today", _today_label(today), 0, num(today.get("rollsOverAt")), today_detail, False, separator=True))
+        # Consumption so far, not a share of anything, so it carries a value
+        # instead of a meter. The reset column holds the date change, so a
+        # total that has stopped growing (see _report_day) has a visible
+        # horizon instead of looking stuck.
+        r["quotaWindows"].append(
+            flat_window("zai_today", _today_label(today), 0, num(today.get("rollsOverAt")), today_detail, False, note=_today_note(today))
+        )
     r["slots"] = [
         {"pct": token_pct, "color": "#126ef4", "text": None, "tooltip": f"Z.AI tokens (5h): {jround(token_pct)}%"},
         {"pct": token2_pct, "color": "#3b82f6", "text": None, "tooltip": f"Z.AI tokens (7d): {jround(token2_pct)}%"},

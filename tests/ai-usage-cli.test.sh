@@ -99,30 +99,10 @@ renders kimi-success     "renders money without a meter"   'Available balance +\
 renders kimi-success     "draws no meter for a balance"    '^Kimi' --color never
 renders_not kimi-success "omits the meter on a balance row" 'Available balance +\[' --color never
 renders openrouter-unlimited "keeps the window note"       'unlimited' --color never
-renders zai-today        "prints the day total as a value" '41\.18M tokens · 370 calls' --color never
+# The value belongs in the usage column and the call count beside it, so a
+# meterless row keeps its aside instead of cramming both into one cell.
+renders zai-today        "prints the day total as a value" 'Today \(Aug 11\) +41\.18M tokens +370 calls' --color never
 renders_not zai-today    "draws no meter for a day total" 'Today +\[' --color never
-
-# The rule between the quota windows and the day total is the whole point of
-# `separatorBefore`, and a line-wise grep cannot ask what came directly above a
-# row — so check the neighbour itself, in both drawing styles.
-rules_above() {
-    local description="$1" row="$2" out above
-    shift 2
-    checks=$((checks + 1))
-    out="$(envelope_for zai-today | "$CLI" "$@" 2>&1)" || {
-        fail zai-today "frontend errored: $out"
-        return
-    }
-    above="$(printf '%s\n' "$out" | grep -B1 -- "$row" | head -1)" || true
-    if ! printf '%s' "$above" | grep -qE '^[─-]+$'; then
-        fail zai-today "$description
-  wanted: a rule directly above the '$row' row
-  got:    $above"
-    fi
-}
-
-rules_above "rules the day total off"   "Today" --color never
-rules_above "rules it off in ascii too" "Today" --color never --ascii
 
 # ── Compact mode ────────────────────────────────────────────────────────────
 
