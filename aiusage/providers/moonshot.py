@@ -14,16 +14,20 @@ def _number(value):
         return 0
 
 
+def _moonshot_key():
+    """Both spellings of the variable, then the conventional files — see
+    `_zai_key` for why this is a named function rather than an inline chain."""
+    return resolve_key(
+        "WIDGET_MOONSHOT_API_KEY",
+        ("MOONSHOT_API_KEY", "KIMI_API_KEY"),
+        os.path.expanduser("~/.config/moonshot/api-key"),
+        os.path.expanduser("~/.moonshot/api-key"),
+        os.path.expanduser("~/.config/kimi/api-key"),
+    )
+
+
 def get_moonshot_balance():
-    api_key = os.environ.get("WIDGET_MOONSHOT_API_KEY") or os.environ.get("MOONSHOT_API_KEY") or os.environ.get("KIMI_API_KEY") or ""
-    if not api_key:
-        api_key = resolve_key(
-            "",
-            "",
-            os.path.expanduser("~/.config/moonshot/api-key"),
-            os.path.expanduser("~/.moonshot/api-key"),
-            os.path.expanduser("~/.config/kimi/api-key"),
-        )
+    api_key = _moonshot_key()
     if not api_key:
         return {}
 

@@ -76,10 +76,10 @@ of the others reads:
 | Mistral | An API key; the vibe CLI optionally adds local session stats |
 | OpenRouter | An API key |
 | Grok | Grok CLI authenticated with `grok --oauth`; an xAI key is optional |
-| Z.AI | A Z.AI token (`keys.zai`, `$ZAI_TOKEN`, or `~/.config/zai/token`) |
+| Z.AI | A Z.AI token (`keys.zai`, `$ZAI_TOKEN`, `$Z_AI_API_KEY`, `~/.config/zai/token`, or the one `glm-acp-agent --setup` already stored) |
 | GitHub Copilot | A GitHub token with **Plan: read**; personal billing only |
 | DeepSeek | A DeepSeek API key |
-| Kimi / Moonshot | A Moonshot **platform API key** — not the Kimi CLI OAuth login |
+| Kimi / Moonshot | A Moonshot **platform API key** (`$MOONSHOT_API_KEY` or `$KIMI_API_KEY`) — not the Kimi CLI OAuth login |
 
 ## Use
 

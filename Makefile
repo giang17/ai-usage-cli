@@ -11,6 +11,7 @@ help: ## list targets
 test: ## run every test (no network access needed)
 	@./tests/get-ai-usage.test.sh
 	@./tests/ai-usage-cli.test.sh
+	@./tests/credentials.test.sh
 	@./tests/python-interp.test.sh
 	@./tests/get-codex-stats.test.sh
 	@./tests/get-codex-rate-limits.test.sh
