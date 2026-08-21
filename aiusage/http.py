@@ -22,19 +22,32 @@ def resolve_key(widget_var, env_var, *files):
     widget passed in, then a conventional environment variable, then the
     first readable config file.
 
+    Every source is cleaned the same way: strip the surrounding whitespace,
+    then drop any \n, \r or space left embedded in the middle. A credential
+    pasted with a trailing newline would otherwise reach urllib, which
+    rejects the header with a ValueError — and that exception carries the
+    credential into the traceback, defeating the guarantee that no secret
+    leaves this package. This only covers whitespace/CR/LF; a credential
+    containing other control characters would still reach urllib as-is.
+
     `env_var` accepts either a single name or a sequence of them, tried in
     order. Several vendors ship two spellings of the same variable — Moonshot
     is read as both MOONSHOT_API_KEY and KIMI_API_KEY, Z.AI documents
-    Z_AI_API_KEY while this tool has always used ZAI_TOKEN — and a provider
-    that knows only one of them reports "no token configured" at a user who
-    did set the key, which is the least debuggable failure we can produce."""
-    value = os.environ.get(widget_var, "") if widget_var else ""
+    Z_AI_API_KEY while this package reads ZAI_TOKEN — and a provider that
+    knows only one of them reports "no token configured" at a user who did
+    set the key, which is the least debuggable failure we can produce.
+    """
+
+    def _clean(s):
+        return s.translate(str.maketrans("", "", "\n\r ")).strip()
+
+    value = _clean(os.environ.get(widget_var, "")) if widget_var else ""
     if not value and env_var:
         names = (env_var,) if isinstance(env_var, str) else env_var
         for name in names:
             if not name:
                 continue
-            value = os.environ.get(name, "")
+            value = _clean(os.environ.get(name, ""))
             if value:
                 break
     if not value:
@@ -43,7 +56,7 @@ def resolve_key(widget_var, env_var, *files):
                 continue
             try:
                 with open(path) as f:
-                    value = f.read().translate(str.maketrans("", "", "\n\r ")).strip()
+                    value = _clean(f.read())
             except OSError:
                 value = ""
             if value:
